@@ -3,7 +3,7 @@ defmodule Bettingsystem.Repo.Migrations.CreateUserPermissions do
 
   def change do
     create table "user_permissions" do
-      add :permission, :string
+      add :name, :string
     end
   end
 end

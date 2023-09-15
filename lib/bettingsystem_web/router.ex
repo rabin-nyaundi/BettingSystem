@@ -20,7 +20,7 @@ defmodule BettingsystemWeb.Router do
   scope "/", BettingsystemWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    # get "/", PageController, :home
   end
 
   # Other scopes may use custom stacks.
@@ -50,6 +50,8 @@ defmodule BettingsystemWeb.Router do
   scope "/", BettingsystemWeb do
     pipe_through [:browser, :redirect_if_user_accounts_is_authenticated]
 
+    get "/", PageController, :home
+
     live_session :redirect_if_user_accounts_is_authenticated,
       on_mount: [{BettingsystemWeb.UserAccountsAuth, :redirect_if_user_accounts_is_authenticated}] do
       live "/user_acconts/register", UserAccountsRegistrationLive, :new
@@ -66,6 +68,7 @@ defmodule BettingsystemWeb.Router do
 
     live_session :require_authenticated_user_accounts,
       on_mount: [{BettingsystemWeb.UserAccountsAuth, :ensure_authenticated}] do
+      live "/home", BettingHomeLive, :index
       live "/user_acconts/settings", UserAccountsSettingsLive, :edit
       live "/user_acconts/settings/confirm_email/:token", UserAccountsSettingsLive, :confirm_email
     end

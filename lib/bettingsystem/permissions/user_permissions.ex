@@ -2,8 +2,6 @@ defmodule Bettingsystem.Permissions.UserPermissions do
   use Ecto.Schema
 
   schema "user_permissions" do
-    field :permission, :string
+    field :name, :string
   end
-
-
 end

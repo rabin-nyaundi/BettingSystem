@@ -3,7 +3,9 @@ defmodule Bettingsystem.Repo.Migrations.CreateUserRoles do
 
   def change do
     create table(:user_roles, defer_constraints: true) do
-      add :role, :string
+      add :name, :string
     end
+
+    create unique_index(:user_roles, [:name])
   end
 end

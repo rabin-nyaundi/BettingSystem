@@ -32,57 +32,57 @@ clubs_list = [
 ]
 
 roles_list = [
-  %Bettingsystem.Roles.UserRoles{
-    role: "superadmin"
+  %UserRoles{
+    name: "superadmin"
   },
-  %Bettingsystem.Roles.UserRoles{
-    role: "admin"
+  %UserRoles{
+    name: "admin"
   },
-  %Bettingsystem.Roles.UserRoles{
-    role: "user"
+  %UserRoles{
+    name: "user"
   }
 ]
 
 permissions_list = [
   %UserPermissions{
-    permission: "CanAddSuperAdmin"
+    name: "CanAddSuperAdmin"
   },
   %UserPermissions{
-    permission: "CanRevokeAdmin"
+    name: "CanRevokeAdmin"
   },
   %UserPermissions{
-    permission: "CanAddAdmin"
+    name: "CanAddAdmin"
   },
   %UserPermissions{
-    permission: "CanRevokeAdmin"
+    name: "CanRevokeAdmin"
   },
   %UserPermissions{
-    permission: "CanAddGames"
+    name: "CanAddGames"
   },
   %UserPermissions{
-    permission: "CanRemoveGames"
+    name: "CanRemoveGames"
   },
   %UserPermissions{
-    permission: "CanViewProfitLoss"
+    name: "CanViewProfitLoss"
   },
   %UserPermissions{
-    permission: "CanViewUser"
+    name: "CanViewUser"
   },
   %UserPermissions{
-    permission: "CanDeleteUser"
+    name: "CanDeleteUser"
   }
 ]
 
-granted_permissions_list = [
-  %Bettingsystem.UserPermissions.GrantedPermissions{
-    role_id: 1,
-    permission_id: 1
-  },
-  %Bettingsystem.UserPermissions.GrantedPermissions{
-    role_id: 2,
-    permission_id: 2
-  }
-]
+# granted_permissions_list = [
+#   %GrantedPermissions{
+#     role: 1,
+#     permission: 1
+#   },
+#   %GrantedPermissions{
+#     role: 2,
+#     permission: 2
+#   }
+# ]
 
 Enum.each(clubs_list, fn club ->
   case Repo.insert(club) do
@@ -98,7 +98,7 @@ end)
 Enum.each(roles_list, fn role ->
   case Repo.insert(role) do
     {:ok, record} ->
-      IO.puts("#{record.role} inserted successfully")
+      IO.puts("#{record.name} inserted successfully")
 
     {:error, changeset} ->
       IO.puts("Failed to insert granted permission:")
@@ -109,10 +109,21 @@ end)
 Enum.each(permissions_list, fn permission ->
   case Repo.insert(permission) do
     {:ok, record} ->
-      IO.puts("#{record.permission} inserted successfully")
+      IO.puts("#{record.name} inserted successfully")
 
     {:error, changeset} ->
       IO.puts("Failed to insert granted permission:")
       IO.inspect(changeset.errors)
   end
 end)
+
+# Enum.each(granted_permissions_list, fn granted_permission ->
+#   case Repo.insert(granted_permission) do
+#     {:ok, record} ->
+#       IO.puts("#{record.role_id} inserted successfully")
+
+#     {:error, changeset} ->
+#       IO.puts("Failed to insert granted permission:")
+#       IO.inspect(changeset.errors)
+#   end
+# end)

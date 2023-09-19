@@ -3,6 +3,7 @@ defmodule Bettingsystem.Repo.Migrations.CreateMatch do
 
   def change do
     create table(:match) do
+      add :game_uuid, :string
       add :home_odds, :string
       add :away_odds, :string
       add :draw_odds, :string

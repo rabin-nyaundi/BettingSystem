@@ -70,6 +70,7 @@ defmodule BettingsystemWeb.Router do
       on_mount: [{BettingsystemWeb.UserAccountsAuth, :ensure_authenticated}] do
       live "/home", BettingHomeLive, :index
       live "/user-bets", UserBetsLive, :index
+      live "/bets/:bet_id", BetViewLive, :index
       live "/user_acconts/settings", UserAccountsSettingsLive, :edit
       live "/user_acconts/settings/confirm_email/:token", UserAccountsSettingsLive, :confirm_email
     end

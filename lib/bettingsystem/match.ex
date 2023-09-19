@@ -3,7 +3,7 @@ defmodule Bettingsystem.Match do
 
   alias Bettingsystem.Repo
   alias Bettingsystem.Bets.Bet
-  alias Bettingsystem.BettingEngine.Match
+  alias Bettingsystem.BettingEngine.Match, as: Games
 
   def list_matches do
     query =
@@ -15,12 +15,13 @@ defmodule Bettingsystem.Match do
   end
 
   def get_match(id) do
-    Repo.get(Match, id)
+    Repo.get(Games, id)
+    |> Repo.preload([:home_club, :away_club])
   end
 
   def save(match_params) do
-    %Match{}
-    |> Match.changeset(match_params)
+    %Games{}
+    |> Games.changeset(match_params)
     |> Repo.insert()
   end
 
@@ -36,6 +37,13 @@ defmodule Bettingsystem.Match do
       order_by: [desc: b.inserted_at]
     )
     |> Repo.all()
+    |> Repo.preload([:game])
+  end
+
+  def get_user_bet(bet_id) do
+    Repo.get(Bet, bet_id)
+    |> Repo.preload([:game])
+    |> Repo.preload(game: [:home_club, :away_club])
   end
 
   def fetch_all_bets_for_admins_and_superadmins(user_id) do

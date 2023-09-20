@@ -16,18 +16,17 @@ defmodule BettingsystemWeb.UsersLive do
     ~H"""
     <div class="flex flex-col lg:w-5/6 xl:w-2/3 mx-auto p-10 shadow-xl border rounded-lg">
       Users
-      <.table id="users" rows={@users} row_click={&JS.navigate(~p"/bets/#{&1}")}>
+      <.table id="users" rows={@users}>
         <:col :let={user} label="First Name"><%= user.first_name <> " " <> user.last_name %></:col>
-        <%!-- <:col :let={user} label="Last Name"><%= user.id %></:col> --%>
         <:col :let={user} label="Email"><%= user.email %></:col>
         <:col :let={user} label="Status">
           <%= if user.is_deleted do %>
-            <span> Inactive</span>
+            <span class="bg-red-500 px-2 py-1 rounded-full text-white"> In active</span>
           <% else %>
-            <span>Active</span>
+            <span class="bg-green-600 px-2 py-1 rounded-full text-white">Active</span>
           <% end %>
         </:col>
-        <:col :let={user} label="Role"><%= user.user_role.name %></:col>
+        <:col :let={user} label="User Type"><%= user.user_role.name %></:col>
         <:col :let={user} label="Date Joined"><%= user.inserted_at %></:col>
         <:action :let={user}>
           <div class="sr-only"></div>
@@ -36,20 +35,13 @@ defmodule BettingsystemWeb.UsersLive do
           <.link class="text-blue-500 p-2" phx-click={show_modal("edit_user_modal")}>
             Edit
           </.link>
-
-          
-            <div class="flex flex-col justify-start items-start bg-yellow-900">
-              Edit user <%= user.first_name <> " " <> user.last_name %>            
-            </div>
-         
-          <.link class="text-blue-500 p-2" navigate={~p"/bets/#{user.id}"}>
+          <.link class="text-blue-500 p-2" navigate={~p"/users/#{user.id}"}>
             View
           </.link>
           <.link
             class="text-red-500 p-2"
-            phx-click="cancel_bet"
-            phx-value-bet_id={user.id}
-            phx-value-status="canceled"
+            phx-click="delete_user"
+            phx-value-user_id={user.id}
             data-confirm="Are you sure?"
           >
             Delete
@@ -65,7 +57,7 @@ defmodule BettingsystemWeb.UsersLive do
     # Fetch users
     users = Account.get_user_accounts()
 
-    role_form = 
+    role_form =
       %UserRoles{}
       |> UserRoles.changeset(%{})
       |> to_form(as: "role_form")
@@ -75,11 +67,20 @@ defmodule BettingsystemWeb.UsersLive do
       |> assign(:users, users)
       |> assign(role_form: role_form)
 
-    IO.inspect("################################")
-    IO.inspect(socket)
-    IO.inspect("################################")
-
     {:ok, socket}
+  end
+
+  def handle_event("delete_user", %{"user_id" => user_id}, socket) do
+    user =
+      user_id
+      |> Account.get_user_accounts!()
+      |> Account.soft_delete_user()
+
+    socket =
+      socket
+      |> push_navigate(to: ~p"/users")
+
+    {:noreply, socket}
   end
 
   # def format_date(date) do

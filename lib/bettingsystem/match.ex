@@ -57,7 +57,8 @@ defmodule Bettingsystem.Match do
                 select: u.id
               )
             ),
-        order_by: [desc: b.inserted_at]
+        order_by: [desc: b.inserted_at],
+        preload: [:game]
       )
 
     Repo.all(query)

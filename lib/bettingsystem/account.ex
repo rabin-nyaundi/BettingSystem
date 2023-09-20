@@ -58,7 +58,10 @@ defmodule Bettingsystem.Account do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user_accounts!(id), do: Repo.get!(UserAccounts, id)
+  def get_user_accounts!(id) do
+    Repo.get!(UserAccounts, id)
+    |> Repo.preload([:user_role])
+  end
 
   ## User accounts registration
 
@@ -404,5 +407,14 @@ defmodule Bettingsystem.Account do
     UserAccounts
     |> Repo.all()
     |> Repo.preload([:user_role])
+  end
+
+  @doc """
+  Soft delete a user account
+  """
+  def soft_delete_user(user) do
+   user
+   |> Ecto.Changeset.change(%{is_deleted: true})
+   |> Repo.update()
   end
 end

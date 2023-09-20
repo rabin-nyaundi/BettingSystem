@@ -72,6 +72,7 @@ defmodule BettingsystemWeb.Router do
       live "/user-bets", UserBetsLive, :index
       live "/bets/:bet_id", BetViewLive, :index
       live "/users/", UsersLive, :index
+      live "/users/:user_id", UserDetailViewLive, :view
       live "/user_acconts/settings", UserAccountsSettingsLive, :edit
       live "/user_acconts/settings/confirm_email/:token", UserAccountsSettingsLive, :confirm_email
     end

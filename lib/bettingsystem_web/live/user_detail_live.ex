@@ -1,8 +1,10 @@
 defmodule BettingsystemWeb.UserDetailViewLive do
   use BettingsystemWeb, :live_view
 
+  alias Bettingsystem.Repo
   alias Bettingsystem.Account
   alias Bettingsystem.Match
+  alias Bettingsystem.Roles.UserRoles
 
   @impl true
   def render(%{loading: true} = assigns) do
@@ -107,9 +109,24 @@ defmodule BettingsystemWeb.UserDetailViewLive do
               change permission <span aria-hidden="true"></span>
             </.button>
             <.modal id="permission_modal">
-              <p>
-                Change permissions
-              </p>
+              <.simple_form for={@role_form} id="role_form" phx-submit="change_role">
+                <:actions class="flex flex-col">
+                  <div class="w-full">
+                    <.input
+                      class="flex w-full"
+                      field={@role_form[:id]}
+                      label="User type"
+                      type="select"
+                      options={Enum.map(@roles, &{&1.name, &1.id})}
+                    />
+                  </div>
+                </:actions>
+                <:actions>
+                  <.button phx-disable-with="Changing..." class="w-full">
+                    Change <span aria-hidden="true">→</span>
+                  </.button>
+                </:actions>
+              </.simple_form>
             </.modal>
           </div>
         </div>
@@ -158,6 +175,17 @@ defmodule BettingsystemWeb.UserDetailViewLive do
   def mount(params, session, socket) do
     %{"user_id" => user_id} = params
 
+    selected_role = nil
+
+    role_form =
+      %UserRoles{}
+      |> UserRoles.changeset(%{})
+      |> to_form(as: "role_form")
+
+    roles = Account.get_user_roles()
+
+    IO.inspect(roles)
+
     user =
       user_id
       |> String.to_integer()
@@ -168,6 +196,29 @@ defmodule BettingsystemWeb.UserDetailViewLive do
       |> String.to_integer()
       |> Match.fetch_all_bets_for_admins_and_superadmins()
 
-    {:ok, assign(socket, user: user, bets: bets)}
+    {:ok,
+     assign(socket,
+       user: user,
+       bets: bets,
+       role_form: role_form,
+       roles: roles,
+       selected_role: selected_role
+     )}
+  end
+
+  def handle_event("change_role", %{"role_form" => role_params}, socket) do
+    %{"id" => role_id} = role_params
+
+    user =
+      socket.assigns.user
+      |> Account.update_user_role(String.to_integer(role_id))
+
+    socket =
+      socket
+      |> push_navigate(to: ~p"/users")
+
+    IO.inspect(user)
+
+    {:noreply, socket}
   end
 end

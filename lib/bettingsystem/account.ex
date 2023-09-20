@@ -6,6 +6,8 @@ defmodule Bettingsystem.Account do
   import Ecto.Query, warn: false
   alias Bettingsystem.Repo
 
+  alias Bettingsystem.Roles.UserRoles
+
   alias Bettingsystem.Account.{UserAccounts, UserAccountsToken, UserAccountsNotifier}
 
   ## Database getters
@@ -416,5 +418,16 @@ defmodule Bettingsystem.Account do
    user
    |> Ecto.Changeset.change(%{is_deleted: true})
    |> Repo.update()
+  end
+
+  def get_user_roles do
+    UserRoles
+    |> Repo.all()
+  end
+
+  def update_user_role(user, role_id) do
+    user
+    |> Ecto.Changeset.change(%{role_id: role_id})
+    |> Repo.update()
   end
 end

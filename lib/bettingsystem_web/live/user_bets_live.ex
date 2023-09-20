@@ -24,7 +24,7 @@ defmodule BettingsystemWeb.UserBetsLive do
         </:col>
         <:action :let={user}>
           <div class="sr-only">
-            <.link navigate={~p"/users/#{user}"}>Show</.link>
+            <%!-- <.link navigate={~p"/users/#{user}"}>Show</.link> --%>
           </div>
         </:action>
         <:action :let={bet}>

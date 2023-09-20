@@ -90,7 +90,10 @@ defmodule Bettingsystem.Account do
 
   """
   def change_user_accounts_registration(%UserAccounts{} = user_accounts, attrs \\ %{}) do
-    UserAccounts.registration_changeset(user_accounts, attrs, hash_password: false, validate_email: false)
+    UserAccounts.registration_changeset(user_accounts, attrs,
+      hash_password: false,
+      validate_email: false
+    )
   end
 
   ## Settings
@@ -154,7 +157,10 @@ defmodule Bettingsystem.Account do
 
     Ecto.Multi.new()
     |> Ecto.Multi.update(:user_accounts, changeset)
-    |> Ecto.Multi.delete_all(:tokens, UserAccountsToken.user_accounts_and_contexts_query(user_accounts, [context]))
+    |> Ecto.Multi.delete_all(
+      :tokens,
+      UserAccountsToken.user_accounts_and_contexts_query(user_accounts, [context])
+    )
   end
 
   @doc ~S"""
@@ -166,12 +172,21 @@ defmodule Bettingsystem.Account do
       {:ok, %{to: ..., body: ...}}
 
   """
-  def deliver_user_accounts_update_email_instructions(%UserAccounts{} = user_accounts, current_email, update_email_url_fun)
+  def deliver_user_accounts_update_email_instructions(
+        %UserAccounts{} = user_accounts,
+        current_email,
+        update_email_url_fun
+      )
       when is_function(update_email_url_fun, 1) do
-    {encoded_token, user_accounts_token} = UserAccountsToken.build_email_token(user_accounts, "change:#{current_email}")
+    {encoded_token, user_accounts_token} =
+      UserAccountsToken.build_email_token(user_accounts, "change:#{current_email}")
 
     Repo.insert!(user_accounts_token)
-    UserAccountsNotifier.deliver_update_email_instructions(user_accounts, update_email_url_fun.(encoded_token))
+
+    UserAccountsNotifier.deliver_update_email_instructions(
+      user_accounts,
+      update_email_url_fun.(encoded_token)
+    )
   end
 
   @doc """
@@ -207,7 +222,10 @@ defmodule Bettingsystem.Account do
 
     Ecto.Multi.new()
     |> Ecto.Multi.update(:user_accounts, changeset)
-    |> Ecto.Multi.delete_all(:tokens, UserAccountsToken.user_accounts_and_contexts_query(user_accounts, :all))
+    |> Ecto.Multi.delete_all(
+      :tokens,
+      UserAccountsToken.user_accounts_and_contexts_query(user_accounts, :all)
+    )
     |> Repo.transaction()
     |> case do
       {:ok, %{user_accounts: user_accounts}} -> {:ok, user_accounts}
@@ -256,14 +274,23 @@ defmodule Bettingsystem.Account do
       {:error, :already_confirmed}
 
   """
-  def deliver_user_accounts_confirmation_instructions(%UserAccounts{} = user_accounts, confirmation_url_fun)
+  def deliver_user_accounts_confirmation_instructions(
+        %UserAccounts{} = user_accounts,
+        confirmation_url_fun
+      )
       when is_function(confirmation_url_fun, 1) do
     if user_accounts.confirmed_at do
       {:error, :already_confirmed}
     else
-      {encoded_token, user_accounts_token} = UserAccountsToken.build_email_token(user_accounts, "confirm")
+      {encoded_token, user_accounts_token} =
+        UserAccountsToken.build_email_token(user_accounts, "confirm")
+
       Repo.insert!(user_accounts_token)
-      UserAccountsNotifier.deliver_confirmation_instructions(user_accounts, confirmation_url_fun.(encoded_token))
+
+      UserAccountsNotifier.deliver_confirmation_instructions(
+        user_accounts,
+        confirmation_url_fun.(encoded_token)
+      )
     end
   end
 
@@ -276,7 +303,8 @@ defmodule Bettingsystem.Account do
   def confirm_user_accounts(token) do
     with {:ok, query} <- UserAccountsToken.verify_email_token_query(token, "confirm"),
          %UserAccounts{} = user_accounts <- Repo.one(query),
-         {:ok, %{user_accounts: user_accounts}} <- Repo.transaction(confirm_user_accounts_multi(user_accounts)) do
+         {:ok, %{user_accounts: user_accounts}} <-
+           Repo.transaction(confirm_user_accounts_multi(user_accounts)) do
       {:ok, user_accounts}
     else
       _ -> :error
@@ -286,7 +314,10 @@ defmodule Bettingsystem.Account do
   defp confirm_user_accounts_multi(user_accounts) do
     Ecto.Multi.new()
     |> Ecto.Multi.update(:user_accounts, UserAccounts.confirm_changeset(user_accounts))
-    |> Ecto.Multi.delete_all(:tokens, UserAccountsToken.user_accounts_and_contexts_query(user_accounts, ["confirm"]))
+    |> Ecto.Multi.delete_all(
+      :tokens,
+      UserAccountsToken.user_accounts_and_contexts_query(user_accounts, ["confirm"])
+    )
   end
 
   ## Reset password
@@ -300,11 +331,20 @@ defmodule Bettingsystem.Account do
       {:ok, %{to: ..., body: ...}}
 
   """
-  def deliver_user_accounts_reset_password_instructions(%UserAccounts{} = user_accounts, reset_password_url_fun)
+  def deliver_user_accounts_reset_password_instructions(
+        %UserAccounts{} = user_accounts,
+        reset_password_url_fun
+      )
       when is_function(reset_password_url_fun, 1) do
-    {encoded_token, user_accounts_token} = UserAccountsToken.build_email_token(user_accounts, "reset_password")
+    {encoded_token, user_accounts_token} =
+      UserAccountsToken.build_email_token(user_accounts, "reset_password")
+
     Repo.insert!(user_accounts_token)
-    UserAccountsNotifier.deliver_reset_password_instructions(user_accounts, reset_password_url_fun.(encoded_token))
+
+    UserAccountsNotifier.deliver_reset_password_instructions(
+      user_accounts,
+      reset_password_url_fun.(encoded_token)
+    )
   end
 
   @doc """
@@ -343,11 +383,26 @@ defmodule Bettingsystem.Account do
   def reset_user_accounts_password(user_accounts, attrs) do
     Ecto.Multi.new()
     |> Ecto.Multi.update(:user_accounts, UserAccounts.password_changeset(user_accounts, attrs))
-    |> Ecto.Multi.delete_all(:tokens, UserAccountsToken.user_accounts_and_contexts_query(user_accounts, :all))
+    |> Ecto.Multi.delete_all(
+      :tokens,
+      UserAccountsToken.user_accounts_and_contexts_query(user_accounts, :all)
+    )
     |> Repo.transaction()
     |> case do
       {:ok, %{user_accounts: user_accounts}} -> {:ok, user_accounts}
       {:error, :user_accounts, changeset, _} -> {:error, changeset}
     end
+  end
+
+  @doc """
+  Fetchs all users from the database
+
+
+  """
+
+  def get_user_accounts do
+    UserAccounts
+    |> Repo.all()
+    |> Repo.preload([:user_role])
   end
 end

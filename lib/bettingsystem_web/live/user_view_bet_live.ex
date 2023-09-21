@@ -26,7 +26,7 @@ defmodule BettingsystemWeb.BetViewLive do
             </span>
           </div>
         </div>
-         <hr />
+        <hr />
         <div class="flex w-full p-4">
           <div class="flex w-1/3">
             <span class="font-medium">Match : </span>
@@ -51,7 +51,7 @@ defmodule BettingsystemWeb.BetViewLive do
           </div>
         </div>
 
-         <hr />
+        <hr />
 
         <div class="flex w-full p-4">
           <div class="flex w-1/3">
@@ -66,7 +66,7 @@ defmodule BettingsystemWeb.BetViewLive do
           </div>
         </div>
 
-         <hr />
+        <hr />
         <div class="flex w-full p-4">
           <div class="flex w-1/3">
             <span class="font-medium">Stake : </span>
@@ -80,7 +80,7 @@ defmodule BettingsystemWeb.BetViewLive do
           </div>
         </div>
 
-         <hr />
+        <hr />
 
         <div class="flex w-full p-4">
           <div class="flex w-1/3">
@@ -100,21 +100,30 @@ defmodule BettingsystemWeb.BetViewLive do
   end
 
   @impl true
-  def mount(params, _session, socket) do
+  def mount(%{"bet_id" => bet_id}, _session, socket) do
     if connected?(socket) do
-      %{"bet_id" => bet_id} = params
 
-      #   get bet which matches bet_id
       current_bet =
         bet_id
         |> String.to_integer()
-        |> Bettingsystem.Match.get_user_bet()
+        |> Bettingsystem.Match.get_user_bet(socket.assigns.current_user_accounts.id)
 
-      socket =
-        socket
-        |> assign(:bet, current_bet)
+      case current_bet do
+        %Bettingsystem.Bets.Bet{} = bet ->
+          socket =
+            socket
+            |> assign(:bet, current_bet)
 
-      {:ok, socket}
+          {:ok, socket}
+        nil ->
+          socket =
+            socket
+            |> put_flash(:error, "No such bet found!")
+            |> push_navigate(to: ~p"/user-bets")
+
+          {:ok, socket}
+
+      end
     else
       {:ok, assign(socket, loading: true)}
     end

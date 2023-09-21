@@ -10,7 +10,7 @@ defmodule BettingsystemWeb.UserBetsLive do
     ~H"""
     <div class="flex flex-col lg:w-5/6 xl:w-2/3 mx-auto p-10 shadow-xl border rounded-lg">
       Bets
-      <.table id="users" rows={@bets} row_click={&JS.navigate(~p"/bets/#{&1}")}>
+      <.table id="users" rows={@bets}>
         <:col :let={bet} label="Bet ID"><%= bet.id %></:col>
         <:col :let={bet} label="Bet Prediction"><%= bet.prediction %></:col>
         <:col :let={bet} label="Status"><%= bet.status %></:col>
@@ -38,7 +38,7 @@ defmodule BettingsystemWeb.UserBetsLive do
               Cancel
             </.link>
           <% else %>
-            <.link navigate={~p"/bets/#{bet.id}"} >
+            <.link navigate={~p"/user-bets/#{bet.id}"}>
               View
             </.link>
           <% end %>

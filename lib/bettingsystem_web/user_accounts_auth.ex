@@ -4,6 +4,8 @@ defmodule BettingsystemWeb.UserAccountsAuth do
   import Plug.Conn
   import Phoenix.Controller
 
+  alias Bettingsystem.Repo
+
   alias Bettingsystem.Account
 
   # Make the remember me cookie valid for 60 days.
@@ -172,6 +174,17 @@ defmodule BettingsystemWeb.UserAccountsAuth do
     end
   end
 
+  def on_mount(:require_authenticated_user_accounts_and_role, _params, session, socket) do
+    socket = mount_current_user_accounts(socket, session)
+
+    if socket.assigns.current_user_accounts.role_id == 3 do
+      {:halt, Phoenix.LiveView.redirect(socket, to: signed_in_path(socket))}
+    else
+      {:cont, socket}
+    end
+  end
+
+
   defp mount_current_user_accounts(socket, session) do
     Phoenix.Component.assign_new(socket, :current_user_accounts, fn ->
       if user_accounts_token = session["user_accounts_token"] do
@@ -193,6 +206,52 @@ defmodule BettingsystemWeb.UserAccountsAuth do
     end
   end
 
+
+  @doc """
+  Used for routes that require the user_accounts to be authenticated and have admin or superadmin role.
+
+  The role here are comming from the database 
+    1 => superadmin
+    2 => admin
+    3 => user
+
+    Only 1 and 2 are allowed to to acess the admin routes
+
+  """
+  def require_authenticated_user_accounts_and_role(conn, _opts) do
+    if conn.assigns[:current_user_accounts] do
+      # Get the current user's role from the assigns or from the database
+      # roles = get_user_role()
+      permitted_roles =[1, 2]
+
+      valid = 
+        permitted_roles 
+        |> Enum.any?(fn role -> role == conn.assigns[:current_user_accounts].role_id end)
+
+
+      user = conn.assigns[:current_user_accounts]
+
+      valid = Enum.any?(permitted_roles, fn role -> role == user.role_id end)
+
+      if valid do
+        conn
+      else
+      # If the role is not allowed, redirect to an error page or a home page
+        conn
+        |> put_flash(:error, "You are not authorized to access this page.")
+        |> redirect(to: ~p"/home")
+        |> halt()
+      end
+    else
+      conn
+      |> put_flash(:error, "You must log in to access this page.")
+      |> maybe_store_return_to()
+      |> redirect(to: ~p"/user_acconts/log_in")
+      |> halt()
+      end
+  end
+
+
   @doc """
   Used for routes that require the user_accounts to be authenticated.
 
@@ -209,6 +268,10 @@ defmodule BettingsystemWeb.UserAccountsAuth do
       |> redirect(to: ~p"/user_acconts/log_in")
       |> halt()
     end
+  end
+
+  defp get_user_role do
+    Repo.all(Bettingsystem.Roles.UserRoles)
   end
 
   defp put_token_in_session(conn, token) do

@@ -70,9 +70,7 @@ defmodule BettingsystemWeb.Router do
       on_mount: [{BettingsystemWeb.UserAccountsAuth, :ensure_authenticated}] do
       live "/home", BettingHomeLive, :index
       live "/user-bets", UserBetsLive, :index
-      live "/bets/:bet_id", BetViewLive, :index
-      live "/users/", UsersLive, :index
-      live "/users/:user_id", UserDetailViewLive, :view
+      live "/user-bets/:bet_id", BetViewLive, :index
       live "/user_acconts/settings", UserAccountsSettingsLive, :edit
       live "/user_acconts/settings/confirm_email/:token", UserAccountsSettingsLive, :confirm_email
     end
@@ -87,6 +85,16 @@ defmodule BettingsystemWeb.Router do
       on_mount: [{BettingsystemWeb.UserAccountsAuth, :mount_current_user_accounts}] do
       live "/user_acconts/confirm/:token", UserAccountsConfirmationLive, :edit
       live "/user_acconts/confirm", UserAccountsConfirmationInstructionsLive, :new
+    end
+  end
+
+  scope "/admin", BettingsystemWeb do
+    pipe_through [:browser, :require_authenticated_user_accounts_and_role]
+
+    live_session :require_authenticated_user_accounts_and_role,
+    on_mount: [{BettingsystemWeb.UserAccountsAuth, :require_authenticated_user_accounts_and_role}] do
+      live "/users/", UsersLive, :index
+      live "/users/:user_id", UserDetailViewLive, :view
     end
   end
 end

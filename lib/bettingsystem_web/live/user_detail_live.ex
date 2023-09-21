@@ -5,6 +5,8 @@ defmodule BettingsystemWeb.UserDetailViewLive do
   alias Bettingsystem.Account
   alias Bettingsystem.Match
   alias Bettingsystem.Roles.UserRoles
+  alias Bettingsystem.UserAccessPermission
+  alias Bettingsystem.AuthPermissions
 
   @impl true
   def render(%{loading: true} = assigns) do
@@ -13,6 +15,7 @@ defmodule BettingsystemWeb.UserDetailViewLive do
     """
   end
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="flex gap-6 mx-auto w-full">
@@ -172,10 +175,13 @@ defmodule BettingsystemWeb.UserDetailViewLive do
     """
   end
 
+  @impl true
   def mount(params, session, socket) do
-    %{"user_id" => user_id} = params
+    required_permissions = [
+      "CanViewUser"
+    ]
 
-    selected_role = nil
+    %{"user_id" => user_id} = params
 
     role_form =
       %UserRoles{}
@@ -183,8 +189,6 @@ defmodule BettingsystemWeb.UserDetailViewLive do
       |> to_form(as: "role_form")
 
     roles = Account.get_user_roles()
-
-    IO.inspect(roles)
 
     user =
       user_id
@@ -201,24 +205,59 @@ defmodule BettingsystemWeb.UserDetailViewLive do
        user: user,
        bets: bets,
        role_form: role_form,
-       roles: roles,
-       selected_role: selected_role
+       roles: roles
      )}
   end
 
   def handle_event("change_role", %{"role_form" => role_params}, socket) do
     %{"id" => role_id} = role_params
 
-    user =
-      socket.assigns.user
-      |> Account.update_user_role(String.to_integer(role_id))
+    required_permissions = [
+      "CanAddAdmin",
+      "CanRevokeAdmin",
+      "CanAddSuperAdmin",
+      "CanRevokeSuperAdmin",
+      "CanAddGames"
+    ]
 
-    socket =
+    perm =
       socket
-      |> push_navigate(to: ~p"/users")
+      |> get_current_user_permissions()
+      |> check_has_permission(required_permissions)
 
-    IO.inspect(user)
+    if !perm do
+      socket =
+        socket
+        |> put_flash(:error, "You dont't have permissions")
+        |> push_navigate(to: ~p"/admin/users")
 
-    {:noreply, socket}
+      {:noreply, socket}
+    else
+      user =
+        socket.assigns.user
+        |> Account.update_user_role(String.to_integer(role_id))
+
+      socket =
+        socket
+        |> put_flash(:info, "Changed role for user ")
+        |> push_navigate(to: ~p"/admin/users/")
+
+      {:noreply, socket}
+    end
+  end
+
+  defp check_has_permission(granted_perms, required_perms) do
+    has_permission =
+      Enum.any?(required_perms, fn rp ->
+        Enum.any?(granted_perms, fn gp ->
+          gp.permission.name == rp
+        end)
+      end)
+  end
+
+  defp get_current_user_permissions(socket) do
+    UserRoles
+    |> Repo.get(socket.assigns.current_user_accounts.role_id)
+    |> UserAccessPermission.list_all_permissions()
   end
 end

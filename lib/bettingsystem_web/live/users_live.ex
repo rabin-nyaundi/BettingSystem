@@ -35,7 +35,7 @@ defmodule BettingsystemWeb.UsersLive do
           <.link class="text-blue-500 p-2" phx-click={show_modal("edit_user_modal")}>
             Edit
           </.link>
-          <.link class="text-blue-500 p-2" navigate={~p"/users/#{user.id}"}>
+          <.link class="text-blue-500 p-2" navigate={~p"/admin/users/#{user.id}"}>
             View
           </.link>
           <.link

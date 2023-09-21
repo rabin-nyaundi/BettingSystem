@@ -9,6 +9,7 @@ defmodule Bettingsystem.Repo.Migrations.CreateBets do
       add :user_id, references(:user_accounts, on_delete: :nothing)
       add :status, :string
       add :possible_win, :string
+      add :win :integer, null: true
 
       timestamps()
     end

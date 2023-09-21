@@ -40,8 +40,13 @@ defmodule Bettingsystem.Match do
     |> Repo.preload([:game])
   end
 
-  def get_user_bet(bet_id) do
-    Repo.get(Bet, bet_id)
+  def get_user_bet(bet_id, user_id) do
+
+    query = 
+    from b in Bet,
+    where: b.id == ^bet_id and b.user_id == ^user_id
+
+    Repo.one(query)
     |> Repo.preload([:game])
     |> Repo.preload(game: [:home_club, :away_club])
   end

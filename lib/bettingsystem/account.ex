@@ -401,8 +401,8 @@ defmodule Bettingsystem.Account do
 
   @doc """
   Fetchs all users from the database
-
-
+  iex> get_user_accounts
+        %UserAccounts{}
   """
 
   def get_user_accounts do

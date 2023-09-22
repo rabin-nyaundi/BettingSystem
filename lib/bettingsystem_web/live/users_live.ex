@@ -29,12 +29,6 @@ defmodule BettingsystemWeb.UsersLive do
         <:col :let={user} label="User Type"><%= user.user_role.name %></:col>
         <:col :let={user} label="Date Joined"><%= user.inserted_at %></:col>
         <:action :let={user}>
-          <div class="sr-only"></div>
-        </:action>
-        <:action :let={user}>
-          <.link class="text-blue-500 p-2" phx-click={show_modal("edit_user_modal")}>
-            Edit
-          </.link>
           <.link class="text-blue-500 p-2" navigate={~p"/admin/users/#{user.id}"}>
             View
           </.link>
@@ -71,14 +65,13 @@ defmodule BettingsystemWeb.UsersLive do
   end
 
   def handle_event("delete_user", %{"user_id" => user_id}, socket) do
-    user =
-      user_id
+    user_id
       |> Account.get_user_accounts!()
       |> Account.soft_delete_user()
 
     socket =
       socket
-      |> push_navigate(to: ~p"/users")
+      |> push_navigate(to: ~p"/admin/users")
 
     {:noreply, socket}
   end

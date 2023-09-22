@@ -45,6 +45,9 @@ roles_list = [
 
 permissions_list = [
   %UserPermissions{
+    name: "CanRevokeSuperAdmin"
+  },
+  %UserPermissions{
     name: "CanAddSuperAdmin"
   },
   %UserPermissions{
@@ -52,9 +55,6 @@ permissions_list = [
   },
   %UserPermissions{
     name: "CanAddAdmin"
-  },
-  %UserPermissions{
-    name: "CanRevokeAdmin"
   },
   %UserPermissions{
     name: "CanAddGames"
@@ -73,16 +73,6 @@ permissions_list = [
   }
 ]
 
-# granted_permissions_list = [
-#   %GrantedPermissions{
-#     role: 1,
-#     permission: 1
-#   },
-#   %GrantedPermissions{
-#     role: 2,
-#     permission: 2
-#   }
-# ]
 
 Enum.each(clubs_list, fn club ->
   case Repo.insert(club) do
@@ -116,14 +106,3 @@ Enum.each(permissions_list, fn permission ->
       IO.inspect(changeset.errors)
   end
 end)
-
-# Enum.each(granted_permissions_list, fn granted_permission ->
-#   case Repo.insert(granted_permission) do
-#     {:ok, record} ->
-#       IO.puts("#{record.role_id} inserted successfully")
-
-#     {:error, changeset} ->
-#       IO.puts("Failed to insert granted permission:")
-#       IO.inspect(changeset.errors)
-#   end
-# end)

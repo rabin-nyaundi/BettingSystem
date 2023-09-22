@@ -1,5 +1,6 @@
 defmodule Bettingsystem.Repo.Migrations.CreateUserAccontsAuthTables do
   use Ecto.Migration
+  import Ecto.SoftDelete.Migration
 
   def change do
     execute "CREATE EXTENSION IF NOT EXISTS citext", ""
@@ -11,6 +12,7 @@ defmodule Bettingsystem.Repo.Migrations.CreateUserAccontsAuthTables do
       add :hashed_password, :string, null: false
       add :is_deleted, :boolean, null: false
       add :confirmed_at, :naive_datetime
+      soft_delete_columns()
       timestamps()
     end
 

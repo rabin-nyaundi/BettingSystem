@@ -56,6 +56,27 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+
+# Configure mail
+# config :bettingsystem, Bettingsystem.Mailer,
+#   adapter: Swoosh.Adapters.SMTP,
+#   relay: "smtp.gmail.com",
+#   username: "rabitechs@gmail.com",
+#   password: "bvdt opbu tcek mebg",
+#   ssl: false,
+#   tls: :always,
+#   auth: :always,
+#   port: 587,
+#   retries: 2
+  # access_token: {:system, "GMAIL_API_ACCESS_TOKEN"}
+
+
+# To deal with token refresh, it could be a better idea to pass the access token
+# in via deliver config explicitly, if you don't update the environment variable
+# periodically. e.g.
+# MyMailer.deliver(my_email, access_token: my_access_token)
+
+
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 

@@ -229,9 +229,9 @@ defmodule BettingsystemWeb.UserAccountsAuth do
         |> Enum.any?(fn role -> role == conn.assigns[:current_user_accounts].role_id end)
 
 
-      user = conn.assigns[:current_user_accounts]
+      # user = conn.assigns[:current_user_accounts]
 
-      valid = Enum.any?(permitted_roles, fn role -> role == user.role_id end)
+      # valid = Enum.any?(permitted_roles, fn role -> role == user.role_id end)
 
       if valid do
         conn
@@ -270,9 +270,6 @@ defmodule BettingsystemWeb.UserAccountsAuth do
     end
   end
 
-  defp get_user_role do
-    Repo.all(Bettingsystem.Roles.UserRoles)
-  end
 
   defp put_token_in_session(conn, token) do
     conn

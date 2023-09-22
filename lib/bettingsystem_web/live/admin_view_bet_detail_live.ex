@@ -1,4 +1,4 @@
-defmodule BettingsystemWeb.BetViewLive do
+defmodule BettingsystemWeb.AdminViewBetDetailLive do
   use BettingsystemWeb, :live_view
 
   @impl true
@@ -100,29 +100,28 @@ defmodule BettingsystemWeb.BetViewLive do
   @impl true
   def mount(%{"bet_id" => bet_id}, _session, socket) do
     if connected?(socket) do
-
       current_bet =
         bet_id
         |> String.to_integer()
         |> Bettingsystem.Match.get_user_bet(socket.assigns.current_user_accounts.id)
 
-        IO.inspect(current_bet)
+      IO.inspect(current_bet)
 
       case current_bet do
-        %Bettingsystem.Bets.Bet{} = _bet ->
+        %Bettingsystem.Bets.Bet{} = bet ->
           socket =
             socket
-            |> assign(:bet, current_bet)
+            |> assign(:bet, bet)
 
           {:ok, socket}
+
         nil ->
           socket =
             socket
             |> put_flash(:error, "No such bet found!")
-            |> push_navigate(to: ~p"/user-bets")
+            |> push_navigate(to: ~p"/admin/users")
 
           {:ok, socket}
-
       end
     else
       {:ok, assign(socket, loading: true)}

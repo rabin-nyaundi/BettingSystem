@@ -1,6 +1,7 @@
 defmodule Bettingsystem.Bets.Bet do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.SoftDelete.Schema
 
   schema "bets" do
     field :amount, :string
@@ -9,7 +10,7 @@ defmodule Bettingsystem.Bets.Bet do
     field :possible_win, :string
     belongs_to :game, Bettingsystem.BettingEngine.Match
     belongs_to :user, Bettingsystem.Account.UserAccounts
-
+    soft_delete_schema()
     timestamps()
   end
 

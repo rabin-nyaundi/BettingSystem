@@ -1,7 +1,7 @@
 defmodule Bettingsystem.BettingEngine.Club do
   use Ecto.Schema
   import Ecto.Changeset
-
+  
   schema "clubs" do
     field :name, :string
 

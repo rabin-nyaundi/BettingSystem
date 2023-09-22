@@ -15,13 +15,6 @@ defmodule BettingsystemWeb.UserBetsLive do
         <:col :let={bet} label="Bet Prediction"><%= bet.prediction %></:col>
         <:col :let={bet} label="Status"><%= bet.status %></:col>
         <:col :let={bet} label="Possible Win  (KES)"><%= bet.possible_win %></:col>
-        <:col :let={bet} label="User">
-          <%= if @role != "user" do %>
-            <%= @user.first_name <> " " <> @user.last_name %>
-          <% else %>
-            <%= @user.email %>
-          <% end %>
-        </:col>
         <:action :let={user}>
           <div class="sr-only">
             <%!-- <.link navigate={~p"/users/#{user}"}>Show</.link> --%>
@@ -30,6 +23,7 @@ defmodule BettingsystemWeb.UserBetsLive do
         <:action :let={bet}>
           <%= if "#{bet.status}" != "canceled" do %>
             <.link
+              class="text-red-500 p-2"
               phx-click="cancel_bet"
               phx-value-bet_id={bet.id}
               phx-value-status="canceled"
@@ -38,10 +32,13 @@ defmodule BettingsystemWeb.UserBetsLive do
               Cancel
             </.link>
           <% else %>
-            <.link navigate={~p"/user-bets/#{bet.id}"}>
-              View
+            <.link navigate={~p"/user-bets/#{bet.id}"} class="text-green-500 p-2">
+              
             </.link>
           <% end %>
+          <.link navigate={~p"/user-bets/#{bet.id}"} class="text-blue-500 p-2">
+            View
+          </.link>
         </:action>
       </.table>
     </div>
@@ -66,7 +63,6 @@ defmodule BettingsystemWeb.UserBetsLive do
 
     socket =
       socket
-      |> assign(:user, user)
       |> assign(:role, role.name)
       |> assign(:bets, all_bets)
 

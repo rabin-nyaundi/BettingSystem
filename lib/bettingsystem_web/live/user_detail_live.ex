@@ -144,13 +144,20 @@ defmodule BettingsystemWeb.UserDetailViewLive do
             <:col :let={bet} label="Amount"><%= bet.amount %></:col>
             <:col :let={bet} label="Possible Win"><%= bet.possible_win %></:col>
             <:action :let={bet}>
-              <div class="sr-only"></div>
-            </:action>
-            <:action :let={user}>
-              <.link class="text-blue-500 p-2" phx-click={show_modal("edit_user_modal")}>
-                Edit
-              </.link>
-              <.link class="text-blue-500 p-2" navigate={~p"/bets/#{user.id}"}>
+              <%= if "#{bet.status}" != "canceled" do %>
+                <.link
+                  class="text-blue-500 p-2"
+                  phx-click="cancel_bet"
+                  phx-value-bet_id={bet.id}
+                  phx-value-status="canceled"
+                  data-confirm="Are you sure?"
+                >
+                  Cancel
+                </.link>
+              <% else %>
+                <.link navigate={~p"/admin/user-bets/#{bet.id}"} class="text-green-500 p-2"></.link>
+              <% end %>
+              <.link class="text-blue-500 p-2" navigate={~p"/admin/user-bets/#{bet.id}"}>
                 View
               </.link>
               <.link
@@ -176,12 +183,10 @@ defmodule BettingsystemWeb.UserDetailViewLive do
   end
 
   @impl true
-  def mount(params, session, socket) do
-    required_permissions = [
-      "CanViewUser"
-    ]
-
-    %{"user_id" => user_id} = params
+  def mount(%{"user_id" => user_id}, _session, socket) do
+    # required_permissions = [
+    #   "CanViewUser"
+    # ]
 
     role_form =
       %UserRoles{}
@@ -208,7 +213,8 @@ defmodule BettingsystemWeb.UserDetailViewLive do
        roles: roles
      )}
   end
-
+  
+  @impl true
   def handle_event("change_role", %{"role_form" => role_params}, socket) do
     %{"id" => role_id} = role_params
 
@@ -233,8 +239,7 @@ defmodule BettingsystemWeb.UserDetailViewLive do
 
       {:noreply, socket}
     else
-      user =
-        socket.assigns.user
+      socket.assigns.user
         |> Account.update_user_role(String.to_integer(role_id))
 
       socket =
@@ -246,9 +251,21 @@ defmodule BettingsystemWeb.UserDetailViewLive do
     end
   end
 
+  def handle_event("cancel_bet", %{"bet_id" => bet_id, "status" => status}, socket) do
+    bet_id
+    |> String.to_integer()
+    |> Bettingsystem.Match.update_bet_status(status)
+
+    socket =
+      socket
+      |> put_flash(:info, "Bet has been #{status}")
+      |> push_navigate(to: ~p"/user-bets")
+
+    {:noreply, socket}
+  end
+
   defp check_has_permission(granted_perms, required_perms) do
-    has_permission =
-      Enum.any?(required_perms, fn rp ->
+   Enum.any?(required_perms, fn rp ->
         Enum.any?(granted_perms, fn gp ->
           gp.permission.name == rp
         end)

@@ -1,6 +1,8 @@
 defmodule Bettingsystem.Account.UserAccounts do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.SoftDelete.Schema
+
 
   schema "user_accounts" do
     field :first_name, :string
@@ -13,6 +15,7 @@ defmodule Bettingsystem.Account.UserAccounts do
     belongs_to :user_role, Bettingsystem.Roles.UserRoles, foreign_key: :role_id
 
     timestamps()
+    soft_delete_schema()
   end
 
   @doc """

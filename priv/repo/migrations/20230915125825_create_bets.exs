@@ -1,5 +1,6 @@
 defmodule Bettingsystem.Repo.Migrations.CreateBets do
   use Ecto.Migration
+  import Ecto.SoftDelete.Migration
 
   def change do
     create table(:bets) do
@@ -9,7 +10,7 @@ defmodule Bettingsystem.Repo.Migrations.CreateBets do
       add :user_id, references(:user_accounts, on_delete: :nothing)
       add :status, :string
       add :possible_win, :string
-      add :win :integer, null: true
+      soft_delete_columns()
 
       timestamps()
     end

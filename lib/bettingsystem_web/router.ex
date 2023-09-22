@@ -92,9 +92,14 @@ defmodule BettingsystemWeb.Router do
     pipe_through [:browser, :require_authenticated_user_accounts_and_role]
 
     live_session :require_authenticated_user_accounts_and_role,
-    on_mount: [{BettingsystemWeb.UserAccountsAuth, :require_authenticated_user_accounts_and_role}] do
+      on_mount: [
+        {BettingsystemWeb.UserAccountsAuth, :require_authenticated_user_accounts_and_role}
+      ] do
       live "/users/", UsersLive, :index
       live "/users/:user_id", UserDetailViewLive, :view
+      live "/matches", CreateMatchLive, :index
+      live "/matches/:match_id", MatchDetailViewLive, :index
+      live "/user-bets/:bet_id", AdminViewBetDetailLive, :index
     end
   end
 end

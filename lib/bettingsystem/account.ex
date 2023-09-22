@@ -406,18 +406,27 @@ defmodule Bettingsystem.Account do
   """
 
   def get_user_accounts do
-    UserAccounts
-    |> Repo.all()
+    query =
+      from(u in UserAccounts,
+        where: u.is_deleted == ^false,
+        select: u
+      )
+
+    Repo.all(query)
     |> Repo.preload([:user_role])
+
+    # UserAccounts
+    # |> Repo.all()
+    # |> Repo.preload([:user_role])
   end
 
   @doc """
   Soft delete a user account
   """
   def soft_delete_user(user) do
-   user
-   |> Ecto.Changeset.change(%{is_deleted: true})
-   |> Repo.update()
+    user
+    |> Ecto.Changeset.change(%{is_deleted: true})
+    |> Repo.update()
   end
 
   def get_user_roles do

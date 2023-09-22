@@ -3,7 +3,6 @@ defmodule BettingsystemWeb.BettingHomeLive do
 
   alias Bettingsystem.Repo
 
-  alias Bettingsystem.Bets.Bet
   alias Bettingsystem.Roles.UserRoles
 
   alias Bettingsystem.BettingEngine.Club
@@ -18,7 +17,6 @@ defmodule BettingsystemWeb.BettingHomeLive do
 
   @impl true
   def render(assigns) do
-    clubs = assigns.clubs || []
 
     ~H"""
     <div class="flex flex-col flex-1 h-full w-full p-2">
@@ -50,13 +48,13 @@ defmodule BettingsystemWeb.BettingHomeLive do
         <% end %>
       </div>
 
-      <div class="flex mx-auto w-2/3 border">
+      <div class="flex gap-8 mx-auto w-2/3">
         <div
           id="matches"
           phx-update="stream"
-          class="flex flex-col justify-center mx-auto gap-8 w-full h-full border border-gray-200 rounded-md p-4"
+          class="flex flex-col justify-center mx-auto gap-8 w-full h-full rounded-lg"
         >
-          <div :for={{dom_id, match} <- @streams.matches} id={dom_id} class="flex flex-col bg-white">
+          <div :for={{dom_id, match} <- @streams.matches} id={dom_id} class="flex flex-col bg-white shadow-lg p-6 rounded-lg">
             <div class="flex">
               <div class="w-1/3 flex flex-col justify-center">
                 GameID: <%= match.game_uuid %>
@@ -95,7 +93,7 @@ defmodule BettingsystemWeb.BettingHomeLive do
         </div>
 
         <%= if Map.get(assigns, :game_id, "") do %>
-          <div class="flex flex-col justify-center px-8 w-1/3 border border-gray-400">
+          <div class="flex flex-col justify-center px-8 w-1/3 shadow-sm">
             <h3 class="p-4 uppercase text-2xl text-center">
               Betslip <hr />
             </h3>
@@ -180,16 +178,11 @@ defmodule BettingsystemWeb.BettingHomeLive do
         |> Matches.changeset(%{})
         |> to_form(as: "match")
 
-      game_form =
-        %Bet{}
-        |> Bet.changeset(%{})
-        |> to_form(as: "game")
 
       socket =
         socket
         |> assign(form: form, loading: false)
         |> assign(:clubs, clubs)
-        |> assign(game_form: game_form, loading: false)
         |> assign(:role, role.name)
         |> assign(:permissions, permissions)
         |> stream(:matches, Bettingsystem.Match.list_matches())
@@ -270,9 +263,9 @@ defmodule BettingsystemWeb.BettingHomeLive do
       |> Float.round()
       |> Float.to_string()
 
-    game_uuid =
-      game_uuid
-      |> to_string()
+    # game_uuid =
+    #   game_uuid
+    #   |> to_string()
 
     bet_params = %{
       game_id: game_id,
@@ -306,51 +299,40 @@ defmodule BettingsystemWeb.BettingHomeLive do
   end
 
   def fetch_all_clubs do
-    clubs = Repo.all(Club)
-    clubs
+    Repo.all(Club)
   end
 
   defp calculate_possible_win(amount, odds) do
     amount * odds
   end
 
-  def generate_unique_game_id do
-    # Define a list of uppercase letters
+  defp generate_unique_game_id do
     letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-    # Get the current timestamp in milliseconds
     timestamp = System.system_time(:millisecond)
 
-    # Generate a random number between 0 and 999
     random_number = :rand.uniform(1000) - 1
 
-    # Convert the timestamp and the random number to strings
     timestamp_string = Integer.to_string(timestamp)
+
     random_number_string = Integer.to_string(random_number)
 
-    # Get the last three digits of the timestamp string
     timestamp_suffix = String.slice(timestamp_string, -3..-1)
 
-    # Pad the random number string with zeros if needed
     random_number_prefix = String.pad_leading(random_number_string, 3, "0")
 
-    # Concatenate the random number and the timestamp strings
     number_part = random_number_prefix <> timestamp_suffix
 
-    # Generate three random letters from the list
     letter_part =
       Enum.map(1..3, fn _ ->
-        # Generate a random index between 0 and 25
         index = :rand.uniform(26) - 1
 
-        # Get the letter at that index
         letter = String.at(letters, index)
 
         letter
       end)
       |> Enum.join("")
 
-    # Concatenate the letter part and the number part
     game_uuid = letter_part <> number_part
 
     # Print the result

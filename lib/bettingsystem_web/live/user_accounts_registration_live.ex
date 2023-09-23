@@ -6,16 +6,9 @@ defmodule BettingsystemWeb.UserAccountsRegistrationLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
+    <div class="mx-auto max-w-[576px] shadow-lg p-6 gap-8 rounded-xl">
       <.header class="text-center">
         Register for an account
-        <:subtitle>
-          Already registered?
-          <.link navigate={~p"/user_acconts/log_in"} class="font-semibold text-brand hover:underline">
-            Sign in
-          </.link>
-          to your account now.
-        </:subtitle>
       </.header>
 
       <.simple_form
@@ -31,15 +24,33 @@ defmodule BettingsystemWeb.UserAccountsRegistrationLive do
           Oops, something went wrong! Please check the errors below.
         </.error>
 
-        <.input field={@form[:first_name]} type="text" label="First Name" required />
-        <.input field={@form[:last_name]} type="text" label="Last Name" required />
+        <div class="flex">
+          <div class="flex lg:w-1/2 w-full">
+         <.input field={@form[:first_name]} type="text" label="First Name" required />
+        </div>
+        <div class="flex lg:w-1/2 w-full">
+          <.input field={@form[:last_name]} type="text" label="Last Name" required />
+        </div>
+        </div>
+
+       
         <.input field={@form[:email]} type="email" label="Email" required />
+        <.input field={@form[:phone_number]} type="text" label="Phone Number" required />
         <.input field={@form[:password]} type="password" label="Password" required />
 
         <:actions>
           <.button phx-disable-with="Creating account..." class="w-full">Create an account</.button>
         </:actions>
       </.simple_form>
+      <.header class="text-center">
+        <:subtitle>
+          Already registered?
+          <.link navigate={~p"/user_acconts/log_in"} class="font-semibold text-brand hover:underline">
+            Sign in
+          </.link>
+          to your account now.
+        </:subtitle>
+      </.header>
     </div>
     """
   end

@@ -9,6 +9,7 @@ defmodule Bettingsystem.Repo.Migrations.CreateUserAccontsAuthTables do
       add :first_name, :string, null: false
       add :last_name, :string, null: false
       add :email, :citext, null: false
+      add :phone_number, :string, null: false
       add :hashed_password, :string, null: false
       add :is_deleted, :boolean, null: false
       add :confirmed_at, :naive_datetime
@@ -28,6 +29,5 @@ defmodule Bettingsystem.Repo.Migrations.CreateUserAccontsAuthTables do
 
     create index(:user_accounts_tokens, [:user_accounts_id])
     create unique_index(:user_accounts_tokens, [:context, :token])
-
   end
 end

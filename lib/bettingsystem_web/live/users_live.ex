@@ -64,6 +64,7 @@ defmodule BettingsystemWeb.UsersLive do
     {:ok, socket}
   end
 
+  @impl true
   def handle_event("delete_user", %{"user_id" => user_id}, socket) do
     user_id
       |> Account.get_user_accounts!()

@@ -4,7 +4,6 @@ defmodule BettingsystemWeb.UserAccountsAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias Bettingsystem.Repo
 
   alias Bettingsystem.Account
 

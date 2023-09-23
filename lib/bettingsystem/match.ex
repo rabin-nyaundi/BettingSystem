@@ -4,7 +4,7 @@ defmodule Bettingsystem.Match do
   alias Bettingsystem.Repo
   alias Bettingsystem.Bets.Bet
   alias Bettingsystem.Account.UserAccounts
-  alias Bettingsystem.UserBets.BetsNotifier
+  # alias Bettingsystem.UserBets.BetsNotifier
   alias Bettingsystem.BettingEngine.Match, as: Games
 
   def list_matches do
@@ -114,14 +114,14 @@ defmodule Bettingsystem.Match do
     Repo.all(query)
   end
 
-  def update_bet_winner_status(bet, status) do
-    Bet.changeset.change(%{status: status})
-    |> Repo.update()
+  # def update_bet_winner_status(bet, status) do
+  #   Bet.changeset.change(%{status: status})
+  #   |> Repo.update()
 
-    BetsNotifier.deliver_status_confirmation(
-      bet.user.email,
-      status,
-      bet.id
-    )
-  end
+  #   BetsNotifier.deliver_status_confirmation(
+  #     bet.user.email,
+  #     status,
+  #     bet.id
+  #   )
+  # end
 end

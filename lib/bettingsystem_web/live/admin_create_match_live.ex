@@ -161,7 +161,7 @@ defmodule BettingsystemWeb.CreateMatchLive do
         socket =
           socket
           |> put_flash(:info, "Match created successfully")
-          |> push_navigate(to: ~p"/home")
+          |> push_navigate(to: ~p"/admin/matches")
 
         {:noreply, socket}
 

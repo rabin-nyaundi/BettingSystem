@@ -10,6 +10,7 @@ defmodule Bettingsystem.Account.UserAccounts do
     field :email, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
+    field :phone_number, :string
     field :is_deleted, :boolean, default: false
     field :confirmed_at, :naive_datetime
     belongs_to :user_role, Bettingsystem.Roles.UserRoles, foreign_key: :role_id
@@ -43,9 +44,10 @@ defmodule Bettingsystem.Account.UserAccounts do
   """
   def registration_changeset(user_accounts, attrs, opts \\ []) do
     user_accounts
-    |> cast(attrs, [:email, :password, :first_name, :last_name ])
+    |> cast(attrs, [:email, :password, :first_name, :last_name, :phone_number ])
     |> validate_email(opts)
     |> validate_password(opts)
+    |> validate_phone_number(opts)
   end
 
   defp validate_email(changeset, opts) do
@@ -65,6 +67,12 @@ defmodule Bettingsystem.Account.UserAccounts do
     # |> validate_format(:password, ~r/[A-Z]/, message: "at least one upper case character")
     # |> validate_format(:password, ~r/[!?@#$%^&*_0-9]/, message: "at least one digit or punctuation character")
     |> maybe_hash_password(opts)
+  end
+
+  def validate_phone_number(changeset, opts) do
+    changeset
+    |> validate_required([:phone_number])
+    |> validate_length(:phone_number, min: 9, max: 13)
   end
 
   defp maybe_hash_password(changeset, opts) do

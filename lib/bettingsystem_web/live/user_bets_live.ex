@@ -1,8 +1,6 @@
 defmodule BettingsystemWeb.UserBetsLive do
   use BettingsystemWeb, :live_view
 
-  alias Bettingsystem.Repo
-
   alias Bettingsystem.Roles.UserRoles
 
   @impl true
@@ -15,11 +13,6 @@ defmodule BettingsystemWeb.UserBetsLive do
         <:col :let={bet} label="Bet Prediction"><%= bet.prediction %></:col>
         <:col :let={bet} label="Status"><%= bet.status %></:col>
         <:col :let={bet} label="Possible Win  (KES)"><%= bet.possible_win %></:col>
-        <:action :let={user}>
-          <div class="sr-only">
-            <%!-- <.link navigate={~p"/users/#{user}"}>Show</.link> --%>
-          </div>
-        </:action>
         <:action :let={bet}>
           <%= if "#{bet.status}" != "canceled" do %>
             <.link
@@ -45,6 +38,7 @@ defmodule BettingsystemWeb.UserBetsLive do
     """
   end
 
+  @impl true
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user_accounts
     role = Bettingsystem.Repo.get(UserRoles, user.role_id)
@@ -69,6 +63,7 @@ defmodule BettingsystemWeb.UserBetsLive do
     {:ok, socket}
   end
 
+  @impl true
   def handle_event("cancel_bet", %{"bet_id" => bet_id, "status" => status}, socket) do
     if connected?(socket), do: Process.send_after(self(), :update, 30)
 

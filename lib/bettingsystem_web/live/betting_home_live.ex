@@ -17,7 +17,6 @@ defmodule BettingsystemWeb.BettingHomeLive do
 
   @impl true
   def render(assigns) do
-
     ~H"""
     <div class="flex flex-col flex-1 h-full w-full p-2">
       <div class="flex justify-end w-full p-4">
@@ -54,7 +53,11 @@ defmodule BettingsystemWeb.BettingHomeLive do
           phx-update="stream"
           class="flex flex-col justify-center mx-auto gap-8 w-full h-full rounded-lg"
         >
-          <div :for={{dom_id, match} <- @streams.matches} id={dom_id} class="flex flex-col bg-white shadow-lg p-6 rounded-lg">
+          <div
+            :for={{dom_id, match} <- @streams.matches}
+            id={dom_id}
+            class="flex flex-col bg-white shadow-lg p-6 rounded-lg"
+          >
             <div class="flex">
               <div class="w-1/3 flex flex-col justify-center">
                 GameID: <%= match.game_uuid %>
@@ -178,12 +181,12 @@ defmodule BettingsystemWeb.BettingHomeLive do
         |> Matches.changeset(%{})
         |> to_form(as: "match")
 
-
       socket =
         socket
         |> assign(form: form, loading: false)
         |> assign(:clubs, clubs)
         |> assign(:role, role.name)
+        |> assign(:betslip, false)
         |> assign(:permissions, permissions)
         |> stream(:matches, Bettingsystem.Match.list_matches())
 
@@ -239,6 +242,7 @@ defmodule BettingsystemWeb.BettingHomeLive do
       |> assign(:prediction, prediction)
       |> assign(:game_id, game_id)
       |> assign(:amount, "")
+      |> assign(:betslip, true)
       |> assign(:picked_odds, picked_odds)
       |> assign(:game_uuid, game_uuid)
       |> assign(:selected_match, match)
@@ -249,7 +253,6 @@ defmodule BettingsystemWeb.BettingHomeLive do
   def handle_event("submit_bet", _params, socket) do
     picked_odds = socket.assigns.picked_odds
     game_id = socket.assigns.game_id
-    game_uuid = socket.assigns.game_uuid
     prediction = socket.assigns.prediction
     user = socket.assigns.current_user_accounts
     amount = "100"
@@ -262,10 +265,6 @@ defmodule BettingsystemWeb.BettingHomeLive do
       calculate_possible_win(amount_int, picked_odds_float - 1)
       |> Float.round()
       |> Float.to_string()
-
-    # game_uuid =
-    #   game_uuid
-    #   |> to_string()
 
     bet_params = %{
       game_id: game_id,

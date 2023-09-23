@@ -6,7 +6,7 @@ defmodule BettingsystemWeb.UserDetailViewLive do
   alias Bettingsystem.Match
   alias Bettingsystem.Roles.UserRoles
   alias Bettingsystem.UserAccessPermission
-  alias Bettingsystem.AuthPermissions
+  # alias Bettingsystem.AuthPermissions
 
   @impl true
   def render(%{loading: true} = assigns) do
@@ -103,6 +103,11 @@ defmodule BettingsystemWeb.UserDetailViewLive do
               </span>
             </div>
           </div>
+
+          <%= if @current_user.role_id == 1 do %>
+            
+          <% end %>
+
           <div>
             <.button
               phx-click={show_modal("permission_modal")}
@@ -113,7 +118,7 @@ defmodule BettingsystemWeb.UserDetailViewLive do
             </.button>
             <.modal id="permission_modal">
               <.simple_form for={@role_form} id="role_form" phx-submit="change_role">
-                <:actions class="flex flex-col">
+                <:actions>
                   <div class="w-full">
                     <.input
                       class="flex w-full"
@@ -188,6 +193,10 @@ defmodule BettingsystemWeb.UserDetailViewLive do
     #   "CanViewUser"
     # ]
 
+    current_user = socket.assigns.current_user_accounts
+
+    IO.inspect(current_user)
+
     role_form =
       %UserRoles{}
       |> UserRoles.changeset(%{})
@@ -210,10 +219,11 @@ defmodule BettingsystemWeb.UserDetailViewLive do
        user: user,
        bets: bets,
        role_form: role_form,
-       roles: roles
+       roles: roles,
+       current_user: current_user
      )}
   end
-  
+
   @impl true
   def handle_event("change_role", %{"role_form" => role_params}, socket) do
     %{"id" => role_id} = role_params
@@ -222,8 +232,7 @@ defmodule BettingsystemWeb.UserDetailViewLive do
       "CanAddAdmin",
       "CanRevokeAdmin",
       "CanAddSuperAdmin",
-      "CanRevokeSuperAdmin",
-      "CanAddGames"
+      "CanRevokeSuperAdmin"
     ]
 
     perm =
@@ -240,7 +249,7 @@ defmodule BettingsystemWeb.UserDetailViewLive do
       {:noreply, socket}
     else
       socket.assigns.user
-        |> Account.update_user_role(String.to_integer(role_id))
+      |> Account.update_user_role(String.to_integer(role_id))
 
       socket =
         socket
@@ -265,11 +274,11 @@ defmodule BettingsystemWeb.UserDetailViewLive do
   end
 
   defp check_has_permission(granted_perms, required_perms) do
-   Enum.any?(required_perms, fn rp ->
-        Enum.any?(granted_perms, fn gp ->
-          gp.permission.name == rp
-        end)
+    Enum.any?(required_perms, fn rp ->
+      Enum.any?(granted_perms, fn gp ->
+        gp.permission.name == rp
       end)
+    end)
   end
 
   defp get_current_user_permissions(socket) do

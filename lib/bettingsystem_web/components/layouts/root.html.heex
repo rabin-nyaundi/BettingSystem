@@ -24,8 +24,39 @@
       </div>
       <ul class="relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
       <%= if @current_user_accounts do %>
+        
+      <%= if @current_user_accounts.role_id == 1  do %>
+      <div class="flex flex-row gap-4 mx-8">
         <li class="text-[0.8125rem] leading-6 text-zinc-900">
-          <%= @current_user_accounts.email %>
+           <.link
+            href={~p"/admin/users"}
+            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+          >
+            Users
+          </.link>
+        </li>
+        <li class="text-[0.8125rem] leading-6 text-zinc-900">
+           <.link
+            href={~p"/admin/matches"}
+            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+          >
+            Matches
+          </.link>
+        </li>
+      </div>
+      <% end %>
+
+       <li class="text-[0.8125rem] leading-6 text-zinc-900">
+           <.link
+            href={~p"/user-bets"}
+            class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700"
+          >
+            Bets
+          </.link>
+        </li>
+       
+        <li class="text-[0.8125rem] leading-6 text-zinc-900">
+          <%= @current_user_accounts.first_name %>
         </li>
         <li>
           <.link

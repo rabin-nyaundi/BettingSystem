@@ -194,10 +194,10 @@ defmodule BettingsystemWeb.BettingHomeLive do
 
         {:noreply, socket}
 
-      {:error, _changeset} ->
+      {:error, reason} ->
         socket =
           socket
-          |> put_flash(:error, "Failed to place bet")
+          |> put_flash(:error, "Failed to place bet #{reason}")
 
         {:noreply, socket}
     end

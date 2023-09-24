@@ -3,9 +3,12 @@ defmodule BettingsystemWeb.BettingHomeLive do
 
   alias Bettingsystem.Repo
 
+  alias Bettingsystem.Match
+
   alias Bettingsystem.Roles.UserRoles
 
   alias Bettingsystem.BettingEngine.Club
+  alias Bettingsystem.UserAccessPermission
   alias Bettingsystem.BettingEngine.Match, as: Matches
 
   @impl true
@@ -19,34 +22,6 @@ defmodule BettingsystemWeb.BettingHomeLive do
   def render(assigns) do
     ~H"""
     <div class="flex flex-col flex-1 h-full w-full p-2">
-      <div class="flex justify-end w-full p-4">
-        <%= if length(@permissions) > 0 do %>
-          <%= if Enum.any?(@permissions, fn permission -> permission.permission.name == "CanAddGames" end) do %>
-            <div>
-              <.button
-                phx-click={show_modal("new_match_modal")}
-                phx-disable-with="Adding new game..."
-                class="w-full"
-              >
-                Add Match <span aria-hidden="true"></span>
-              </.button>
-            </div>
-          <% end %>
-
-          <%= if Enum.any?(@permissions, fn permission -> permission.permission.name == "CanAddSuperAdmin" end) do %>
-            <div>
-              <.button
-                phx-click={show_modal("new_match_modal")}
-                phx-disable-with="Adding new game..."
-                class="w-full bg-white rounded-full"
-              >
-                View History <span aria-hidden="true"></span>
-              </.button>
-            </div>
-          <% end %>
-        <% end %>
-      </div>
-
       <div class="flex gap-8 mx-auto w-2/3">
         <div
           id="matches"
@@ -59,8 +34,8 @@ defmodule BettingsystemWeb.BettingHomeLive do
             class="flex flex-col bg-white shadow-lg p-6 rounded-lg"
           >
             <div class="flex">
-              <div class="w-1/3 flex flex-col justify-center">
-                GameID: <%= match.game_uuid %>
+              <div class="w-1/3 flex flex-col gap-2 justify-center">
+               <span>  GameID: <b> <%= match.game_uuid %> </b> </span>
                 <p>
                   <%= match.home_club.name %>
                 </p>
@@ -95,71 +70,35 @@ defmodule BettingsystemWeb.BettingHomeLive do
           </div>
         </div>
 
-        <%= if Map.get(assigns, :game_id, "") do %>
-          <div class="flex flex-col justify-center px-8 w-1/3 shadow-sm">
-            <h3 class="p-4 uppercase text-2xl text-center">
-              Betslip <hr />
-            </h3>
-            <div class="flex flex-col gap-7">
-              <p>Game id: <%= Map.get(assigns, :game_uuid, "") %></p>
-              <p>
-                <%= if Map.has_key?(assigns, :selected_match) do %>
-                  <span>Your Pick: <%= Map.get(assigns, :prediction, "") %></span>
-                <% end %>
-              </p>
-              <div class="flex justify-cente items-center gap-2">
-                <div class="flex h-auto">
-                  <button
-                    phx-click="submit_bet"
-                    phx-disable-with="Submitting..."
-                    class="w-full border py-3 px-5 rounded-xl bg-blue-400 text-white"
-                  >
-                    Submit <span aria-hidden="true"></span>
-                  </button>
+        <%= if @betslip == true do %>
+          <%= if Map.get(assigns, :game_id) do %>
+            <div class="flex flex-col justify-center px-8 w-1/3 shadow-sm">
+              <h3 class="p-4 uppercase text-2xl text-center">
+                Betslip <hr />
+              </h3>
+              <div class="flex flex-col gap-7">
+                <p>Game id: <%= Map.get(assigns, :game_uuid, "") %></p>
+                <p>
+                  <%= if Map.has_key?(assigns, :selected_match) do %>
+                    <span>Your Pick: <%= Map.get(assigns, :prediction) %></span>
+                  <% end %>
+                </p>
+                <div class="flex justify-cente items-center gap-2">
+                  <div class="flex h-auto">
+                    <button
+                      phx-click="submit_bet"
+                      phx-disable-with="Submitting..."
+                      class="w-full border py-3 px-5 rounded-xl bg-blue-400 text-white"
+                    >
+                      Submit <span aria-hidden="true"></span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          <% end %>
         <% end %>
       </div>
-
-      <.modal id="new_match_modal">
-        <div class="flex justify-center items-center m-auto w-full">
-          <.simple_form for={@form} class="w-full" phx-submit="save_match">
-            <div class="w-full">
-              <.input
-                field={@form[:home_club_id]}
-                label="Home Club"
-                type="select"
-                options={Enum.map(@clubs, &{&1.name, &1.id})}
-              />
-            </div>
-            <div class="w-full">
-              <.input
-                class="w-full"
-                field={@form[:away_club_id]}
-                label="Away club"
-                type="select"
-                options={Enum.map(@clubs, &{&1.name, &1.id})}
-              />
-            </div>
-            <div class="w-full">
-              <.input field={@form[:home_odds]} label="Home Odds" type="text" required />
-            </div>
-            <div class="w-full">
-              <.input field={@form[:away_odds]} label="Away Odds" type="text" required />
-            </div>
-            <div class="w-full">
-              <.input field={@form[:draw_odds]} label="Draw odds" type="text" required />
-            </div>
-            <div>
-              <.button phx-disable-with="Saving" class="w-full">
-                Save<span aria-hidden="true"></span>
-              </.button>
-            </div>
-          </.simple_form>
-        </div>
-      </.modal>
     </div>
     """
   end
@@ -167,14 +106,12 @@ defmodule BettingsystemWeb.BettingHomeLive do
   @impl true
   def mount(_params, _session, socket) do
     if connected?(socket) do
-      clubs = fetch_all_clubs()
+      clubs = Match.fetch_all_clubs()
 
-      # fetch user role
-      user = socket.assigns.current_user_accounts
-      role = Repo.get(UserRoles, user.role_id)
-
-      # Fetch user permissions
-      permissions = Bettingsystem.UserAccessPermission.list_all_permissions(role)
+      # fetch user permissions
+      permissions =
+        UserAccessPermission.get_user_role(socket.assigns.current_user_accounts)
+        |> Bettingsystem.UserAccessPermission.list_all_permissions()
 
       form =
         %Matches{}
@@ -183,44 +120,18 @@ defmodule BettingsystemWeb.BettingHomeLive do
 
       socket =
         socket
-        |> assign(form: form, loading: false)
-        |> assign(:clubs, clubs)
-        |> assign(:role, role.name)
-        |> assign(:betslip, false)
-        |> assign(:permissions, permissions)
-        |> stream(:matches, Bettingsystem.Match.list_matches())
+        |> assign(
+          form: form,
+          clubs: clubs,
+          permissions: permissions,
+          betslip: false,
+          loading: false
+        )
+        |> stream(:matches, Match.list_matches())
 
       {:ok, socket}
     else
       {:ok, assign(socket, loading: true)}
-    end
-  end
-
-  @impl true
-  def handle_event("save_match", %{"match" => match_params}, socket) do
-    unique_game_id = generate_unique_game_id() |> to_string()
-
-    match_params = Map.put(match_params, "game_uuid", unique_game_id)
-
-    match_params
-    |> Bettingsystem.Match.save()
-    |> case do
-      {:ok, _match} ->
-        socket =
-          socket
-          |> put_flash(:info, "Match created successfully")
-          |> push_navigate(to: ~p"/home")
-
-        {:noreply, socket}
-
-      {:error, changeset} ->
-        socket =
-          socket
-          |> put_flash(:error, "An error occurred while saving the match")
-
-        IO.inspect(changeset)
-
-        {:noreply, socket}
     end
   end
 
@@ -235,17 +146,17 @@ defmodule BettingsystemWeb.BettingHomeLive do
         },
         socket
       ) do
-    match = Repo.get(Matches, game_id)
+    match = Match.get_match(game_id)
 
     socket =
       socket
-      |> assign(:prediction, prediction)
-      |> assign(:game_id, game_id)
-      |> assign(:amount, "")
-      |> assign(:betslip, true)
-      |> assign(:picked_odds, picked_odds)
-      |> assign(:game_uuid, game_uuid)
-      |> assign(:selected_match, match)
+      |> assign(prediction: prediction,
+        game_id: game_id,
+        picked_odds: picked_odds,
+        game_uuid: game_uuid,
+        selected_match: match,
+        betslip: true
+      )
 
     {:noreply, socket}
   end
@@ -259,10 +170,9 @@ defmodule BettingsystemWeb.BettingHomeLive do
 
     picked_odds_float = String.to_float(picked_odds)
 
-    amount_int = String.to_integer(amount)
-
     possible_win =
-      calculate_possible_win(amount_int, picked_odds_float - 1)
+      String.to_integer(amount)
+      |> calculate_possible_win(picked_odds_float - 1)
       |> Float.round()
       |> Float.to_string()
 
@@ -274,9 +184,7 @@ defmodule BettingsystemWeb.BettingHomeLive do
       possible_win: possible_win,
       status: "Pending"
     }
-
-    bet_params
-    |> Bettingsystem.Match.save_bet()
+    |> Match.save_bet()
     |> case do
       {:ok, _bet} ->
         socket =
@@ -286,19 +194,13 @@ defmodule BettingsystemWeb.BettingHomeLive do
 
         {:noreply, socket}
 
-      {:error, changeset} ->
+      {:error, _changeset} ->
         socket =
           socket
           |> put_flash(:error, "Failed to place bet")
 
-        IO.inspect(changeset)
-
         {:noreply, socket}
     end
-  end
-
-  def fetch_all_clubs do
-    Repo.all(Club)
   end
 
   defp calculate_possible_win(amount, odds) do
@@ -333,9 +235,6 @@ defmodule BettingsystemWeb.BettingHomeLive do
       |> Enum.join("")
 
     game_uuid = letter_part <> number_part
-
-    # Print the result
-    IO.puts(game_uuid)
 
     game_uuid
   end

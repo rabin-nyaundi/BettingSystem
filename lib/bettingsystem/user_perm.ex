@@ -2,6 +2,8 @@ defmodule Bettingsystem.UserAccessPermission do
   import Ecto.Query, warn: false
 
   alias Bettingsystem.Repo
+
+  alias Bettingsystem.Roles.UserRoles
   alias Bettingsystem.UserPermissions.GrantedPermissions
 
   def list_all_permissions(role) do
@@ -13,4 +15,10 @@ defmodule Bettingsystem.UserAccessPermission do
 
     Repo.all(query)
   end
+
+
+  def get_user_role(user) do
+    Repo.get(UserRoles, user.id)
+  end
+
 end

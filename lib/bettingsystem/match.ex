@@ -2,10 +2,11 @@ defmodule Bettingsystem.Match do
   import Ecto.Query, warn: false
 
   alias Bettingsystem.Repo
+  alias Bettingsystem.BettingEngine.Club
   alias Bettingsystem.Bets.Bet
   alias Bettingsystem.Account.UserAccounts
   # alias Bettingsystem.UserBets.BetsNotifier
-  alias Bettingsystem.BettingEngine.Match, as: Games
+  alias Bettingsystem.BettingEngine.Match, as: Matches
 
   def list_matches do
     query =
@@ -17,13 +18,13 @@ defmodule Bettingsystem.Match do
   end
 
   def get_match(id) do
-    Repo.get(Games, id)
+    Repo.get(Matches, id)
     |> Repo.preload([:home_club, :away_club, :match_winner])
   end
 
   def save(match_params) do
-    %Games{}
-    |> Games.changeset(match_params)
+    %Matches{}
+    |> Matches.changeset(match_params)
     |> Repo.insert()
   end
 
@@ -42,16 +43,7 @@ defmodule Bettingsystem.Match do
     |> Repo.preload([:game, :user])
   end
 
-  # def get_user_bet(bet_id, user_id) do
-  #   query =
-  #     from b in Bet,
-  #       where: b.id == ^bet_id and b.user_id == ^user_id,
-  #       preload: [:game, :user]
 
-  #   Repo.one(query)
-  #   |> Repo.preload([:game])
-  #   |> Repo.preload(game: [:home_club, :away_club])
-  # end
 
   def get_user_bet(bet_id, user_id) do
     query =
@@ -114,14 +106,14 @@ defmodule Bettingsystem.Match do
     Repo.all(query)
   end
 
-  # def update_bet_winner_status(bet, status) do
-  #   Bet.changeset.change(%{status: status})
-  #   |> Repo.update()
 
-  #   BetsNotifier.deliver_status_confirmation(
-  #     bet.user.email,
-  #     status,
-  #     bet.id
-  #   )
-  # end
+  @doc """
+  Fetch all clubs fro the database
+
+  iex> clusb = fetch_all_clubs
+  """
+
+  def fetch_all_clubs do
+    Repo.all(Club)
+  end
 end
